@@ -314,26 +314,11 @@
             border: 2px solid var(--border);
         }
 
-        .encyclopedia-section {
-            margin-top: 0;
-            grid-column: 1 / -1;
-        }
-
-        .subject-block[data-subject="语文"] { 
-            border-color: var(--chinese); 
-        }
-        .subject-block[data-subject="英语"] { 
-            border-color: var(--english); 
-        }
-        .subject-block[data-subject="数学"] { 
-            border-color: var(--math); 
-        }
-        .subject-block[data-subject="科学"] { 
-            border-color: var(--science); 
-        }
-        .subject-block[data-subject="其他"] { 
-            border-color: var(--other); 
-        }
+        .subject-block[data-subject="语文"] { border-color: var(--chinese); }
+        .subject-block[data-subject="英语"] { border-color: var(--english); }
+        .subject-block[data-subject="数学"] { border-color: var(--math); }
+        .subject-block[data-subject="科学"] { border-color: var(--science); }
+        .subject-block[data-subject="其他"] { border-color: var(--other); }
 
         .subject-block-title {
             font-size: 1.1rem;
@@ -397,7 +382,7 @@
         }
 
         .encyclopedia-section {
-            margin-top: 20px;
+            margin-top: 0;
             padding: 20px;
             background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
             border-radius: 12px;
@@ -415,6 +400,18 @@
         }
 
         .tips-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .three-tips-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .four-tips-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
@@ -485,9 +482,12 @@
                 flex-direction: column;
                 text-align: center;
             }
+
+            .output-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* 导出专用样式 */
         .export-wrapper {
             width: 794px;
             background: white;
@@ -515,12 +515,6 @@
             padding: 20px;
         }
 
-        .export-wrapper .output-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
         .export-wrapper .subject-block {
             margin-bottom: 0;
             padding: 12px;
@@ -542,13 +536,12 @@
         .export-wrapper .encyclopedia-section {
             margin-top: 0;
             padding: 16px;
-            grid-column: 1 / -1;
         }
 
         .export-wrapper .tips-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: 1fr;
+            gap: 8px;
         }
 
         .export-wrapper .tip-item {
@@ -670,7 +663,6 @@
                 </div>
 
                 <div class="homework-content" id="homeworkContent">
-                    <!-- 作业内容将由JavaScript动态生成 -->
                 </div>
             </div>
         </div>
@@ -695,16 +687,12 @@
             { category: '好性格', text: '相信自己，你是最棒的学习小能手！' },
             { category: '好性格', text: '和同学互相帮助，共同进步更有趣。' },
             { category: '好性格', text: '遇到困难不要怕，勇敢面对才能成长。' },
-            { category: '好性格', text: '不会的题目不气馁，多问一句、多练一遍就会进步。' },
-            { category: '好性格', text: '失败是成功之母，一次没做对不代表什么。' },
             { category: '高效', text: '番茄工作法：专注25分钟，休息5分钟，效率翻倍！' },
             { category: '高效', text: '先做难的题目，简单的留到最后。' },
             { category: '高效', text: '利用碎片时间背单词，积少成多。' },
             { category: '高效', text: '做完一科作业再换另一科，注意力更集中。' },
             { category: '高效', text: '用不同颜色的笔标记重点，学习更有条理。' },
-            { category: '高效', text: '先把作业按难易排个序，先攻最难的，后面越写越顺。' },
-            { category: '高效', text: '给自己设定小目标，完成后记得奖励自己！' },
-            { category: '高效', text: '用思维导图整理知识点，记得更牢固。' }
+            { category: '高效', text: '给自己设定小目标，完成后记得奖励自己！' }
         ];
 
         let currentTips = [];
@@ -716,13 +704,8 @@
 
         function parseHomeworkInput(input) {
             if (!input.trim()) return [];
-
             let items = input.split(/[；;]/).map(item => item.trim()).filter(item => item);
-
-            items = items.map(item => {
-                return item.replace(/^\d+[.、)）]\s*/, '').trim();
-            });
-
+            items = items.map(item => item.replace(/^\d+[.、)）]\s*/, '').trim());
             return items;
         }
 
@@ -732,7 +715,9 @@
         }
 
         function changeTips() {
-            currentTips = getRandomTips(6);
+            const isOddCount = document.querySelector('.tips-container.three-tips-grid') !== null;
+            const tipsCount = isOddCount ? 3 : 4;
+            currentTips = getRandomTips(tipsCount);
             renderTips();
         }
 
@@ -783,29 +768,32 @@
                 '其他': parseHomeworkInput(document.getElementById('otherInput').value)
             };
 
-            const hasAnyHomework = Object.values(subjectsData).some(items => items.length > 0);
+            const subjectsWithContent = SUBJECTS_ORDER.filter(subject => subjectsData[subject].length > 0);
+            const subjectCount = subjectsWithContent.length;
 
-            if (!hasAnyHomework) {
+            if (subjectCount === 0) {
                 showToast('请至少输入一项作业内容！');
                 return;
             }
 
             document.getElementById('outputTitle').textContent = `作业清单 - ${studentName} | ${formatDate(inputDate)}`;
 
+            const isOddCount = subjectCount % 2 === 1;
+            const tipsCount = isOddCount ? 3 : 4;
+            currentTips = getRandomTips(tipsCount);
+
+            const iconMap = {
+                '语文': '📖',
+                '英语': '🔤',
+                '数学': '🔢',
+                '科学': '🔬',
+                '其他': '📋'
+            };
+
             let contentHtml = '<div class="output-grid">';
 
-            SUBJECTS_ORDER.forEach(subject => {
+            subjectsWithContent.forEach(subject => {
                 const items = subjectsData[subject];
-                if (items.length === 0) return;
-
-                const iconMap = {
-                    '语文': '📖',
-                    '英语': '🔤',
-                    '数学': '🔢',
-                    '科学': '🔬',
-                    '其他': '📋'
-                };
-
                 const listItems = items.map((item, index) => `
                     <li class="homework-item">
                         <div class="homework-item-left">
@@ -816,7 +804,7 @@
                     </li>
                 `).join('');
 
-                let subjectBlock = `
+                contentHtml += `
                     <div class="subject-block" data-subject="${subject}">
                         <div class="subject-block-title">
                             ${iconMap[subject]} ${subject}
@@ -827,11 +815,8 @@
                         </ul>
                     </div>
                 `;
-
-                contentHtml += subjectBlock;
             });
 
-            currentTips = getRandomTips(6);
             const tipsHtml = currentTips.map(tip => `
                 <div class="tip-item">
                     <span class="tip-category">${tip.category}：</span>
@@ -839,19 +824,20 @@
                 </div>
             `).join('');
 
-            const encyclopediaBlock = `
+            const tipsContainerClass = isOddCount ? 'three-tips-grid' : 'four-tips-grid';
+
+            contentHtml += `
                 <div class="encyclopedia-section">
                     <div class="encyclopedia-header">
                         🌟 小学生百科小贴士
                     </div>
-                    <div class="tips-container">
+                    <div class="tips-container ${tipsContainerClass}">
                         ${tipsHtml}
                     </div>
                     <button class="btn-change" onclick="changeTips()">🔄 换一换</button>
                 </div>
             `;
 
-            contentHtml += encyclopediaBlock;
             contentHtml += '</div>';
 
             document.getElementById('homeworkContent').innerHTML = contentHtml;
@@ -877,6 +863,18 @@
             const content = document.createElement('div');
             content.className = 'homework-content';
             content.innerHTML = document.getElementById('homeworkContent').innerHTML;
+
+            const tipsForExport = getRandomTips(3);
+            const tipsHtml = tipsForExport.map(tip => `
+                <div class="tip-item">
+                    <span class="tip-category">${tip.category}：</span>
+                    <span>${tip.text}</span>
+                </div>
+            `).join('');
+            const tipsContainer = content.querySelector('.tips-container');
+            if (tipsContainer) {
+                tipsContainer.innerHTML = tipsHtml;
+            }
 
             exportWrapper.appendChild(title);
             exportWrapper.appendChild(content);
