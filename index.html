@@ -389,6 +389,10 @@
             border: 2px solid #FF9800;
         }
 
+        .encyclopedia-section.full-width {
+            grid-column: 1 / -1;
+        }
+
         .encyclopedia-header {
             display: flex;
             align-items: center;
@@ -415,6 +419,17 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+        }
+
+        .four-tips-inline {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+
+        .four-tips-inline .tip-item {
+            font-size: 0.85rem;
+            padding: 6px 8px;
         }
 
         .tip-item {
@@ -538,10 +553,26 @@
             padding: 16px;
         }
 
+        .export-wrapper .encyclopedia-section.full-width {
+            grid-column: 1 / -1;
+        }
+
         .export-wrapper .tips-container {
             display: grid;
             grid-template-columns: 1fr;
             gap: 8px;
+        }
+
+        .export-wrapper .four-tips-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .export-wrapper .four-tips-inline {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
         }
 
         .export-wrapper .tip-item {
@@ -715,10 +746,15 @@
         }
 
         function changeTips() {
-            const isOddCount = document.querySelector('.tips-container.three-tips-grid') !== null;
-            const tipsCount = isOddCount ? 3 : 4;
+            const isFullWidth = document.querySelector('.encyclopedia-section.full-width') !== null;
+            const tipsCount = 4;
             currentTips = getRandomTips(tipsCount);
             renderTips();
+            
+            const tipsContainer = document.querySelector('.tips-container');
+            if (tipsContainer) {
+                tipsContainer.className = isFullWidth ? 'tips-container four-tips-grid' : 'tips-container four-tips-inline';
+            }
         }
 
         function renderTips() {
@@ -779,7 +815,7 @@
             document.getElementById('outputTitle').textContent = `作业清单 - ${studentName} | ${formatDate(inputDate)}`;
 
             const isOddCount = subjectCount % 2 === 1;
-            const tipsCount = isOddCount ? 3 : 4;
+            const tipsCount = isOddCount ? 4 : 4;
             currentTips = getRandomTips(tipsCount);
 
             const iconMap = {
@@ -789,6 +825,10 @@
                 '科学': '🔬',
                 '其他': '📋'
             };
+
+            const totalModules = subjectCount + 1;
+            const needsFullWidth = totalModules % 2 === 1;
+            const encyclopediaClass = needsFullWidth ? 'encyclopedia-section full-width' : 'encyclopedia-section';
 
             let contentHtml = '<div class="output-grid">';
 
@@ -824,10 +864,10 @@
                 </div>
             `).join('');
 
-            const tipsContainerClass = isOddCount ? 'three-tips-grid' : 'four-tips-grid';
+            const tipsContainerClass = needsFullWidth ? 'four-tips-grid' : 'four-tips-inline';
 
             contentHtml += `
-                <div class="encyclopedia-section">
+                <div class="${encyclopediaClass}">
                     <div class="encyclopedia-header">
                         🌟 小学生百科小贴士
                     </div>
@@ -864,16 +904,22 @@
             content.className = 'homework-content';
             content.innerHTML = document.getElementById('homeworkContent').innerHTML;
 
-            const tipsForExport = getRandomTips(3);
-            const tipsHtml = tipsForExport.map(tip => `
-                <div class="tip-item">
-                    <span class="tip-category">${tip.category}：</span>
-                    <span>${tip.text}</span>
-                </div>
-            `).join('');
-            const tipsContainer = content.querySelector('.tips-container');
-            if (tipsContainer) {
-                tipsContainer.innerHTML = tipsHtml;
+            const sourceTipsContainer = document.querySelector('#homeworkContent .tips-container');
+            if (sourceTipsContainer) {
+                const exportTipsContainer = content.querySelector('.tips-container');
+                if (exportTipsContainer) {
+                    const clonedTips = sourceTipsContainer.querySelectorAll('.tip-item');
+                    const tipsHtml = Array.from(clonedTips).map(tip => tip.outerHTML).join('');
+                    exportTipsContainer.innerHTML = tipsHtml;
+                    
+                    const sourceClass = sourceTipsContainer.className;
+                    exportTipsContainer.className = sourceClass;
+                }
+            }
+
+            const changeBtn = content.querySelector('.btn-change');
+            if (changeBtn) {
+                changeBtn.style.display = 'none';
             }
 
             exportWrapper.appendChild(title);
